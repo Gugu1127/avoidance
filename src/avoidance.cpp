@@ -40,46 +40,27 @@ class Group {
     ros::Subscriber sub_window;
     ros::Publisher pub;
 
+    void grouping(int start_index, int end_index, vector<int> &target) {
+        target.clear();
+        int currentIndex = start_index;
+        while (currentIndex != end_index) {
+            target.push_back(currentIndex);
+            currentIndex += 1;
+            if (currentIndex >= 720) {
+                currentIndex = 0;
+            }
+        }
+    }
+
    public:
     Group() {
-        vector<int> temp;
-        for (int i = 0; i < 720; i++) {
-            if (i >= 0 && i <= 84) {
-                temp.push_back(i);
-            }
-
-            if (i >= 635 && i <= 719) {
-                index_group[top].push_back(i);
-            }
-
-            if (i >= 300 && i <= 419) {
-                index_group[bottom].push_back(i);
-            }
-
-            if (i >= 60 && i <= 179) {
-                index_group[top_L].push_back(i);
-            }
-
-            if (i >= 540 && i <= 659) {
-                index_group[top_R].push_back(i);
-            }
-
-            if (i >= 195 && i <= 284) {
-                index_group[bottom_L].push_back(i);
-            }
-
-            
-            if (i >= 435 && i <= 524) {
-                index_group[bottom_R].push_back(i);
-            }
-
-
-
-        }
-
-        for (int i = 0; i < temp.size(); i++) {
-            index_group[top].push_back(temp[i]);
-        }
+        
+        grouping(635, 84, index_group[top]);
+        grouping(60, 179, index_group[top_L]);
+        grouping(540, 659, index_group[top_R]);
+        grouping(300, 419, index_group[bottom]);
+        grouping(195, 284, index_group[bottom_L]);
+        grouping(435, 524, index_group[bottom_R]);
 
         sub = n.subscribe<sensor_msgs::LaserScan>("/scan", 1, &Group::scanCallback, this);
         sub_window = n.subscribe("/sliding_window/set", 1, &Group::set_window_size, this);
