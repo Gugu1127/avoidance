@@ -14,7 +14,7 @@ using namespace std;
 
 #define default_window_size 31
 #define obstacle_size 5
-#define top_distance_stop 0.2
+#define top_distance_stop 0.25
 #define top_distance_slow 0.8
 #define bottom_distance_stop 0.25
 #define bottom_distance_slow 0.8
@@ -88,22 +88,26 @@ class Group {
         average_array.clear();
         int half_window_size = floor(window_size / 2);
         for (int i = 0; i < 720; i++) {
-            double total = 0, no_zero_elements = 0;
-            for (int j = i - half_window_size; j <= i + half_window_size; j++) {
-                int index = j;
-                if (j < 0) {
-                    index += 720;
-                } else if (j >= 720) {
-                    index -= 720;
+            if (scan->ranges[i] > 0) {
+                average_array.push_back(scan->ranges[i]);
+            } else {
+                double total = 0, no_zero_elements = 0;
+                for (int j = i - half_window_size; j <= i + half_window_size; j++) {
+                    int index = j;
+                    if (j < 0) {
+                        index += 720;
+                    } else if (j >= 720) {
+                        index -= 720;
+                    }
+
+                    total += scan->ranges[index];
+                    if (scan->ranges[index] > 0) {
+                        no_zero_elements++;
+                    }
                 }
 
-                total += scan->ranges[index];
-                if (scan->ranges[index] > 0) {
-                    no_zero_elements++;
-                }
+                average_array.push_back(no_zero_elements == 0 ? 0 : total / no_zero_elements);
             }
-
-            average_array.push_back(no_zero_elements == 0 ? 0 : total / no_zero_elements);
         }
     }
 
@@ -179,10 +183,11 @@ class Group {
             sum += var(array);
         }
         cout << sum / 720 << endl;
+
         if (sum / 720 > 0.08) {
             window_size += 20;
         } else {
-            window_size -= 10;
+            window_size -= 3;
         }
 
         if (window_size < 31) {
